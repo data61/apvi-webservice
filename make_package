@@ -25,5 +25,4 @@ tar czf target/apvi-webservice-${DESCRIBE}.tar.gz \
   fonts \
   -C ${DIST} \
     apvi-webservice \
-    aemo-webservice \
 && echo "Built package ${TARGET}"
