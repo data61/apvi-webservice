@@ -1,11 +1,9 @@
 flags: {}
 packages:
 - '.'
-# - ../aremi-web-utils
 - location:
     git: https://github.inside.nicta.com.au/AREMI/aremi-web-utils.git
-    # No tags yet
-    commit: e14c3f05f21a35f000b75ece8a110904c4b751f4
+    commit: 0.9.0.0
 extra-deps:
 - time-units-1.0.0
 - lens-datetime-0.2.1
@@ -13,3 +11,4 @@ extra-deps:
 - http-accept-0.2
 - hslogger-template-2.0.3
 resolver: lts-3.14
+local-bin-path: dist
