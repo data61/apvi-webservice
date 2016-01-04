@@ -1,8 +1,11 @@
-{-# LANGUAGE BangPatterns      #-}
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE BangPatterns          #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE TypeSynonymInstances  #-}
 {-# OPTIONS_GHC -with-rtsopts=-T #-}
 
 module Main where
@@ -18,6 +21,8 @@ import           GHC.Conc.Sync                             (getNumProcessors,
 
 -- import qualified System.Remote.Monitoring             as M
 
+import           Data.Text.Lazy                            (Text, pack)
+
 import           Network.Wai                               (Middleware)
 import           Network.Wai.Handler.Warp                  (run)
 import           Network.Wai.Middleware.Cors               (simpleCors)
@@ -28,6 +33,14 @@ import           Network.Wai.Middleware.RequestLogger      (Destination (..),
                                                             mkRequestLogger)
 import           Network.Wai.Util                          (replaceHeader)
 import           Servant
+import           Servant.Docs
+import           Servant.HTML.Blaze
+import           Text.Blaze.Html                           (Html)
+import qualified Text.Blaze.Html5                          as H
+import           Text.Blaze.Html5.Attributes               as A
+
+import qualified Text.Markdown                             as MD
+
 import           System.IO                                 (BufferMode (..),
                                                             IOMode (..),
                                                             hSetBuffering,
@@ -44,7 +57,7 @@ import           Data.Configurator.Types
 
 import           APVI.LiveSolar
 
-import           Graphics.Rendering.Chart.Backend.Diagrams (createEnv )
+import           Graphics.Rendering.Chart.Backend.Diagrams (createEnv)
 import           Graphics.Rendering.Chart.Easy             hiding (Default)
 import           Util.Charts                               (loadFonts)
 
@@ -52,19 +65,41 @@ import           Util.Charts                               (loadFonts)
 $(deriveLoggers "HSL" [HSL.DEBUG, HSL.INFO, HSL.ERROR, HSL.WARNING])
 
 type App =
-         "apvi" :> APVILiveSolar
+         "apvi" :> (APVILiveSolar :<|> "api" :> Get '[HTML] APIDoc)
     :<|> "static" :> Raw
+
 
 appProxy :: Proxy App
 appProxy = Proxy
 
+
+newtype APIDoc = APIDoc Html
+
+instance ToSample APIDoc APIDoc where
+    toSample _ = Just (APIDoc "(This page)")
+
+instance H.ToMarkup APIDoc where
+    toMarkup (APIDoc d) = H.toMarkup d
+
+
+docsHtml :: APIDoc
+docsHtml = APIDoc $ do
+    H.docTypeHtml $ do
+        H.head $ do
+            H.meta H.! charset "utf-8"
+            H.meta H.! name "viewport" H.! content "width=device-width, initial-scale=1.0"
+            H.link H.! rel "stylesheet" H.! href "//writ.cmcenroe.me/1.0.2/writ.min.css"
+        H.head $
+            H.main $ do
+                H.h1 "APVI WebService API"
+                MD.markdown def $ pack $ markdown $ docs appProxy
 
 appServer ::Config -> EitherT String IO (Server App)
 appServer conf = do
     fontSelector <- liftIO $ loadFonts conf
     let !env = createEnv bitmapAlignmentFns 500 300 fontSelector
     ls <- EitherT $ makeLiveSolarServer conf env
-    return $ ls :<|> serveDirectory "static"
+    return $ (ls :<|> return docsHtml) :<|> serveDirectory "static"
     where
         _addCorsHeader :: Middleware
         _addCorsHeader app req respond = app req (respond . replaceHeader ("Access-Control-Allow-Origin","*"))

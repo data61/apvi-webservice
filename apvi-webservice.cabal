@@ -54,6 +54,7 @@ executable apvi-webservice
 
   -- Modules included in this executable, other than Main.
   other-modules:     APVI.LiveSolar
+                     , APVI.Docs
 
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
@@ -89,6 +90,11 @@ executable apvi-webservice
                        , either           >= 4.3 && < 5.0
                        , configurator     >= 0.3 && < 1.0
                        , aremi-web-utils
+                       , servant-docs     >= 0.4.4 && < 0.5
+                       , servant-blaze    >= 0.4.4 && < 0.5
+                       , markdown         >= 0.1.13 && < 0.2
+                       , blaze-html       >= 0.8 && < 0.9
+                       , here             >= 1.2 && < 1.3
 
   -- Directories containing source files.
   hs-source-dirs:      src

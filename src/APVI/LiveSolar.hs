@@ -1,15 +1,19 @@
-{-# LANGUAGE BangPatterns      #-}
-{-# LANGUAGE CPP               #-}
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE PolyKinds         #-}
-{-# LANGUAGE RankNTypes        #-}
-{-# LANGUAGE TemplateHaskell   #-}
-{-# LANGUAGE TupleSections     #-}
-{-# LANGUAGE TypeFamilies      #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE PolyKinds                  #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE RankNTypes                 #-}
+{-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TupleSections              #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE TypeOperators              #-}
 
 
 module APVI.LiveSolar (
@@ -33,7 +37,7 @@ module APVI.LiveSolar (
     ) where
 
 
-import           Data.List                                 (sortBy)
+import           Data.List                                 (sortBy, intercalate)
 import           Data.Monoid                               ((<>))
 import           Data.Ord                                  (comparing)
 import Data.Maybe (catMaybes)
@@ -113,10 +117,10 @@ import           Data.IORef                                (newIORef)
 import           Data.Time.Units                           hiding (Day)
 
 import           Servant
--- import           Servant.Docs
---
-import qualified Data.Configurator                         as C
-import           Data.Configurator.Types                   (Config)
+import           Servant.Docs
+
+import qualified Data.Configurator       as C
+import           Data.Configurator.Types (Config)
 
 
 import           Util.Charts
@@ -125,7 +129,11 @@ import           Util.Periodic
 import           Util.Types
 import           Util.Web
 
-import           Text.Printf                               (printf)
+import           Text.Printf             (printf)
+
+import           Data.String.Here        (here)
+
+import           APVI.Docs
 
 
 $(deriveLoggers "HSL" [HSL.DEBUG, HSL.ERROR, HSL.WARNING, HSL.INFO])
@@ -173,21 +181,42 @@ states = [
 
 type APVILiveSolar = "v3" :> (
     "performance" :>
-        (    "csv"                              :> Header "Host" Text :> Get '[CSV] CsvBS
-        :<|> "png" :> Capture "pngstate" Text   :> Get '[PNG] PngBS
-        :<|> "json"                             :> Get '[JSON] Value)
+        (    "csv"                                  :> Header "Host" Text :> Get '[CSV] PerformanceCSV
+        :<|> "png" :> Capture "pngstate" StateName  :> Get '[PNG] PerformancePNG
+        :<|> "json"                                 :> Get '[JSON] PerformanceJSON)
     :<|>
     "contribution" :>
-        (    "csv"                              :> Header "Host" Text :> Get '[CSV] CsvBS
-        :<|> "png" :> Capture "pngstate" Text   :> Get '[PNG] PngBS
-        :<|> "json"                             :> Get '[JSON] Value)
+        (    "csv"                                  :> Header "Host" Text :> Get '[CSV] ContributionCSV
+        :<|> "png" :> Capture "pngstate" StateName  :> Get '[PNG] ContributionPNG
+        :<|> "json"                                 :> Get '[JSON] ContributionJSON)
     )
 
+newtype PerformancePNG   = PPNG  {unPPNG  :: PngBS} deriving (Eq, Show, MimeRender PNG)
+newtype PerformanceCSV   = PCSV  {unPCSV  :: CsvBS} deriving (Eq, Show, MimeRender CSV)
+newtype PerformanceJSON  = PJSON {unPJSON :: Value} deriving (Eq, Show)
+newtype ContributionPNG  = CPNG  {unCPNG  :: PngBS} deriving (Eq, Show, MimeRender PNG)
+newtype ContributionCSV  = CCSV  {unCCSV  :: CsvBS} deriving (Eq, Show, MimeRender CSV)
+newtype ContributionJSON = CJSON {unCJSON :: Value} deriving (Eq, Show)
 
--- instance ToCapture (Capture "svgstate" Text) where
---     toCapture _ = DocCapture "svgstate" $
---         "Australian State name, currently supported are: all, "
---         ++ intercalate ", " (map (T.unpack . fst) states)
+newtype StateName        = SN {unStateName :: Text} deriving (Eq, Show)
+
+instance ToSample PerformancePNG PerformancePNG where toSample _ = Just (PPNG $ Tagged "(A PNG Image)")
+instance ToSample PerformanceCSV PerformanceCSV where toSample _ = Just . PCSV . Tagged $ perfCsvSample
+instance ToSample PerformanceJSON Text where toSample _ = Just $ perfJsonSample
+instance ToSample ContributionPNG ContributionPNG where toSample _ = Just (CPNG $ Tagged "(A PNG Image)")
+instance ToSample ContributionCSV ContributionCSV where toSample _ = Just . CCSV . Tagged $ contCsvSample
+instance ToSample ContributionJSON Text where toSample _ = Just $ contJsonSample
+deriving instance {-# OVERLAPPING #-} MimeRender JSON PerformanceJSON
+deriving instance {-# OVERLAPPING #-} MimeRender JSON ContributionJSON
+instance ToSample StateName Text where toSample _ = Just "nsw"
+instance FromText StateName where fromText = Just . SN
+
+instance ToCapture (Capture "pngstate" StateName) where
+    toCapture _ = DocCapture "State name"
+                    $ "The name of the state to produce a chart for. Values may be 'all' or one of: "
+                    ++ intercalate ", " (map (T.unpack . fst) states)
+                    ++ "."
+
 
 makeLiveSolarServer :: Config -> ChartEnv ->  IO (Either String (Server APVILiveSolar))
 makeLiveSolarServer conf env = do
@@ -195,12 +224,12 @@ makeLiveSolarServer conf env = do
     case eref of
         Left str -> return $ Left str
         Right ref -> return $ Right (
-            (serveCSV ref performanceCSV
-                :<|> servePNG ref performanceGraphs
-                :<|> serveJSON ref performanceGraphJSON)
-            :<|> (serveCSV ref contributionCSV
-                :<|> servePNG ref contributionGraphs
-                :<|> serveJSON ref contributionGraphJSON)
+            (        (fmap PCSV . serveCSV ref performanceCSV)
+                :<|> (fmap PPNG . servePNG ref performanceGraphs . unStateName)
+                :<|> (PJSON <$> serveJSON ref performanceGraphJSON))
+            :<|> (   (fmap CCSV . serveCSV ref contributionCSV)
+                :<|> (fmap CPNG . servePNG ref contributionGraphs . unStateName)
+                :<|> (CJSON <$> serveJSON ref contributionGraphJSON))
             )
 
 
