@@ -6,7 +6,6 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE TypeSynonymInstances  #-}
-{-# OPTIONS_GHC -with-rtsopts=-T #-}
 
 module Main where
 
@@ -19,7 +18,6 @@ import           System.Log.Logger.TH                      (deriveLoggers)
 import           GHC.Conc.Sync                             (getNumProcessors,
                                                             setNumCapabilities)
 
--- import qualified System.Remote.Monitoring             as M
 
 import           Data.Text.Lazy                            (pack)
 
@@ -37,7 +35,7 @@ import           Servant.Docs
 import           Servant.HTML.Blaze
 import           Text.Blaze.Html                           (Html)
 import qualified Text.Blaze.Html5                          as H
-import           Text.Blaze.Html5.Attributes               as A
+import           Text.Blaze.Html5.Attributes               (charset, name, content, rel, href)
 
 import qualified Text.Markdown                             as MD
 
@@ -61,6 +59,8 @@ import           Graphics.Rendering.Chart.Backend.Diagrams (createEnv)
 import           Graphics.Rendering.Chart.Easy             hiding (Default)
 import           Util.Charts                               (loadFonts)
 
+import qualified System.Remote.Monitoring                  as M
+import           Network.Wai.Metrics
 
 $(deriveLoggers "HSL" [HSL.DEBUG, HSL.INFO, HSL.ERROR, HSL.WARNING])
 
@@ -94,7 +94,7 @@ docsHtml = APIDoc $ do
                 H.h1 "APVI WebService API"
                 MD.markdown def $ pack $ markdown $ docs appProxy
 
-appServer ::Config -> EitherT String IO (Server App)
+appServer :: Config -> EitherT String IO (Server App)
 appServer conf = do
     fontSelector <- liftIO $ loadFonts conf
     let !env = createEnv bitmapAlignmentFns 500 300 fontSelector
@@ -113,7 +113,15 @@ makeMiddleware config = do
     accessLogger <- mkRequestLogger (def {destination = Handle h
                                          ,outputFormat = Apache FromFallback
                                          ,autoFlush = True})
-    return (accessLogger . gzip def . simpleCors)
+    mmonPort <- C.lookup config "monitoring-port"
+    mmonHost <- C.lookup config "monitoring-hostname"
+    monitor <- case (,) <$> mmonPort <*> mmonHost of
+        Nothing -> pure id
+        Just (monPort,monHost) -> do
+            store <- M.serverMetricStore <$> M.forkServer monHost monPort
+            waiMetrics <- registerWaiMetrics store
+            return $ metrics waiMetrics
+    return (monitor . accessLogger . gzip def . simpleCors)
     -- return (logStdoutDev . simpleCors)
     -- return (simpleCors)
 

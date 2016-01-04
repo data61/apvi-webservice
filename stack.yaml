@@ -11,5 +11,8 @@ extra-deps:
 - http-accept-0.2
 - hslogger-template-2.0.3
 - servant-blaze-0.4.4.5
+- ekg-0.4.0.8
+- ekg-json-0.1.0.0
+- wai-middleware-metrics-0.2.2
 resolver: lts-3.14
 local-bin-path: dist
