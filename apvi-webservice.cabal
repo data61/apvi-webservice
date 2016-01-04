@@ -7,7 +7,7 @@ name:                apvi-webservice
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.9.0.0
+version:             0.9.1.0
 
 -- A short (one-line) description of the package.
 synopsis:            A simple web service for showing live PV data from APVI
@@ -90,10 +90,9 @@ executable apvi-webservice
                        , wai-extra        >= 3.0 && < 3.1
                        , either           >= 4.3 && < 5.0
                        , configurator     >= 0.3 && < 1.0
-                       , aremi-web-utils
+                       , aremi-web-utils  >= 0.9.1.1 && < 1.0
                        , servant-docs     >= 0.4.4 && < 0.5
                        , servant-blaze    >= 0.4.4 && < 0.5
-                       , markdown         >= 0.1.13 && < 0.2
                        , blaze-html       >= 0.8 && < 0.9
                        , here             >= 1.2 && < 1.3
                        , ekg              >= 0.4 && < 0.5
