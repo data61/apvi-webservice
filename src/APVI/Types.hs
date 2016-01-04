@@ -50,14 +50,14 @@ states = [
 
 data AppState = AppState {
     _latestETag              :: !(Maybe ETag)
-    , _contributionCSV       :: Maybe (Text -> CsvBS)
+    , _contributionCSV       :: !(Maybe (Text -> CsvBS))
     , _contributionGraphs    :: !(HashMap Text PngBS)
-    , _performanceCSV        :: Maybe (Text -> CsvBS)
+    , _performanceCSV        :: !(Maybe (Text -> CsvBS))
     , _performanceGraphs     :: !(HashMap Text PngBS)
-    , _performanceGraphJSON  :: Value
-    , _contributionGraphJSON :: Value
-    , _chartEnv              :: Maybe ChartEnv
-    , _httpManager           :: Maybe Manager
+    , _performanceGraphJSON  :: !Value
+    , _contributionGraphJSON :: !Value
+    , _chartEnv              :: !(Maybe ChartEnv)
+    , _httpManager           :: !(Maybe Manager)
 }
 
 $(makeLenses ''AppState)
