@@ -21,7 +21,7 @@ import           GHC.Conc.Sync                             (getNumProcessors,
 
 -- import qualified System.Remote.Monitoring             as M
 
-import           Data.Text.Lazy                            (Text, pack)
+import           Data.Text.Lazy                            (pack)
 
 import           Network.Wai                               (Middleware)
 import           Network.Wai.Handler.Warp                  (run)

@@ -14,20 +14,19 @@ import           Servant.Docs
 
 import           Data.Aeson
 
-import           Data.List           (intercalate)
-import           Data.Text           (Text)
-import qualified Data.Text           as T
-import           Data.HashMap.Strict (HashMap)
-import qualified Data.HashMap.Strict as H
+import           Data.HashMap.Strict  (HashMap)
+import qualified Data.HashMap.Strict  as H
+import           Data.List            (intercalate)
+import           Data.Text            (Text)
+import qualified Data.Text            as T
 
-
-import           Data.Time.LocalTime (ZonedTime (..))
+import           Network.HTTP.Conduit (Manager)
 
 import           Control.Lens
 
-import           Data.Default        (Default (..))
+import           Data.Default         (Default (..))
 
-import qualified Data.Vector         as V
+import qualified Data.Vector          as V
 
 
 import           APVI.Docs
@@ -50,8 +49,7 @@ states = [
 
 
 data AppState = AppState {
-      _timeFetched           :: !(Maybe ZonedTime)
-    , _latestETag            :: !(Maybe ETag)
+    _latestETag              :: !(Maybe ETag)
     , _contributionCSV       :: Maybe (Text -> CsvBS)
     , _contributionGraphs    :: !(HashMap Text PngBS)
     , _performanceCSV        :: Maybe (Text -> CsvBS)
@@ -59,6 +57,7 @@ data AppState = AppState {
     , _performanceGraphJSON  :: Value
     , _contributionGraphJSON :: Value
     , _chartEnv              :: Maybe ChartEnv
+    , _httpManager           :: Maybe Manager
 }
 
 $(makeLenses ''AppState)
@@ -66,7 +65,6 @@ $(makeLenses ''AppState)
 
 instance Default AppState where
     def = AppState {
-        _timeFetched           = Nothing,
         _latestETag            = Nothing,
         _contributionCSV       = Nothing,
         _contributionGraphs    = H.empty,
@@ -74,7 +72,8 @@ instance Default AppState where
         _performanceGraphs     = H.empty,
         _performanceGraphJSON  = Array V.empty,
         _contributionGraphJSON = Array V.empty,
-        _chartEnv              = Nothing
+        _chartEnv              = Nothing,
+        _httpManager           = Nothing
     }
 
 
