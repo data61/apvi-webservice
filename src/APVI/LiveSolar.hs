@@ -37,15 +37,13 @@ module APVI.LiveSolar (
     ) where
 
 
-import           Data.List                                 (sortBy, intercalate)
+import           Data.List                                 (sortBy)
 import           Data.Monoid                               ((<>))
 import           Data.Ord                                  (comparing)
-import Data.Maybe (catMaybes)
+import           Data.Maybe (catMaybes)
 
 import           Control.Applicative
 import           Control.Arrow                             (second)
-
-import           Data.Default                              (Default (..))
 
 import           Data.ByteString                           ()
 import qualified Data.ByteString                           as S
@@ -57,7 +55,6 @@ import qualified Data.Text                                 as T
 import           Data.Text.Encoding                        (encodeUtf8)
 
 
-import           Data.HashMap.Strict                       (HashMap)
 import qualified Data.HashMap.Strict                       as H
 
 import           Data.Csv                                  (defaultEncodeOptions,
@@ -117,7 +114,6 @@ import           Data.IORef                                (newIORef)
 import           Data.Time.Units                           hiding (Day)
 
 import           Servant
-import           Servant.Docs
 
 import qualified Data.Configurator       as C
 import           Data.Configurator.Types (Config)
@@ -131,53 +127,12 @@ import           Util.Web
 
 import           Text.Printf             (printf)
 
-import           Data.String.Here        (here)
-
-import           APVI.Docs
+import           APVI.Types
 
 
 $(deriveLoggers "HSL" [HSL.DEBUG, HSL.ERROR, HSL.WARNING, HSL.INFO])
 
 
-
-data AppState = AppState {
-      _timeFetched           :: !(Maybe ZonedTime)
-    , _latestETag            :: !(Maybe ETag)
-    , _contributionCSV       :: Maybe (Text -> CsvBS)
-    , _contributionGraphs    :: !(HashMap Text PngBS)
-    , _performanceCSV        :: Maybe (Text -> CsvBS)
-    , _performanceGraphs     :: !(HashMap Text PngBS)
-    , _performanceGraphJSON  :: Value
-    , _contributionGraphJSON :: Value
-    , _chartEnv              :: Maybe ChartEnv
-}
-
-$(makeLenses ''AppState)
-
-
-instance Default AppState where
-    def = AppState {
-        _timeFetched        = Nothing,
-        _latestETag         = Nothing,
-        _contributionCSV    = Nothing,
-        _contributionGraphs = H.empty,
-        _performanceCSV     = Nothing,
-        _performanceGraphs  = H.empty,
-        _performanceGraphJSON = A.Array empty,
-        _contributionGraphJSON = A.Array empty,
-        _chartEnv              = Nothing
-    }
-
-states :: [(Text, Int)]
-states = [
-    ("nsw",1),
-    ("vic",2),
-    ("qld",3),
-    ("sa",4),
-    ("wa",5),
-    ("tas",6)
-    -- ("nt",7)
-    ]
 
 type APVILiveSolar = "v3" :> (
     "performance" :>
@@ -190,32 +145,6 @@ type APVILiveSolar = "v3" :> (
         :<|> "png" :> Capture "pngstate" StateName  :> Get '[PNG] ContributionPNG
         :<|> "json"                                 :> Get '[JSON] ContributionJSON)
     )
-
-newtype PerformancePNG   = PPNG  {unPPNG  :: PngBS} deriving (Eq, Show, MimeRender PNG)
-newtype PerformanceCSV   = PCSV  {unPCSV  :: CsvBS} deriving (Eq, Show, MimeRender CSV)
-newtype PerformanceJSON  = PJSON {unPJSON :: Value} deriving (Eq, Show)
-newtype ContributionPNG  = CPNG  {unCPNG  :: PngBS} deriving (Eq, Show, MimeRender PNG)
-newtype ContributionCSV  = CCSV  {unCCSV  :: CsvBS} deriving (Eq, Show, MimeRender CSV)
-newtype ContributionJSON = CJSON {unCJSON :: Value} deriving (Eq, Show)
-
-newtype StateName        = SN {unStateName :: Text} deriving (Eq, Show)
-
-instance ToSample PerformancePNG PerformancePNG where toSample _ = Just (PPNG $ Tagged "(A PNG Image)")
-instance ToSample PerformanceCSV PerformanceCSV where toSample _ = Just . PCSV . Tagged $ perfCsvSample
-instance ToSample PerformanceJSON Text where toSample _ = Just $ perfJsonSample
-instance ToSample ContributionPNG ContributionPNG where toSample _ = Just (CPNG $ Tagged "(A PNG Image)")
-instance ToSample ContributionCSV ContributionCSV where toSample _ = Just . CCSV . Tagged $ contCsvSample
-instance ToSample ContributionJSON Text where toSample _ = Just $ contJsonSample
-deriving instance {-# OVERLAPPING #-} MimeRender JSON PerformanceJSON
-deriving instance {-# OVERLAPPING #-} MimeRender JSON ContributionJSON
-instance ToSample StateName Text where toSample _ = Just "nsw"
-instance FromText StateName where fromText = Just . SN
-
-instance ToCapture (Capture "pngstate" StateName) where
-    toCapture _ = DocCapture "State name"
-                    $ "The name of the state to produce a chart for. Values may be 'all' or one of: "
-                    ++ intercalate ", " (map (T.unpack . fst) states)
-                    ++ "."
 
 
 makeLiveSolarServer :: Config -> ChartEnv ->  IO (Either String (Server APVILiveSolar))
