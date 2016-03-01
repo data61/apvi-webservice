@@ -1,3 +1,6 @@
+### apvi-webservice version 0.9.1.1
+- Fix RTS options in cabal file.
+
 ### apvi-webservice version 0.9.0.0
 - Make a best effort attempt to make new charts if possible - if we can't make new charts, the old ones will remain available.
 
