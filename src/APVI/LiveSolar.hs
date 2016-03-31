@@ -181,7 +181,7 @@ updateRef retries ref = flip catch (\e -> (warningM  . show $ (e :: SomeExceptio
     current <- readIORef ref
     ejsn <- retrying (fibonacciBackoff 1000 <> limitRetries retries)
                      (\_ e -> return (isErr e))
-                     $ fetchFromCache (current ^?! httpManager . _Just) url (current ^. latestETag)
+                     $ \_ -> fetchFromCache (current ^?! httpManager . _Just) url (current ^. latestETag)
                         [("Accept"          , "application/json, text/javascript, */*"),
                          ("X-Requested-With", "XMLHttpRequest")
                         ]
@@ -342,4 +342,3 @@ getTS f state objs =
     in sortBy (comparing (fmap fst))
        . Prelude.map (\v -> (\t s -> seq t $ seq s (t,s)) <$> v ^? timeLens <*> v ^? stateLens)
        $ objs
-
