@@ -94,7 +94,7 @@ makeMiddleware config = do
         Just (monPort,monHost) -> do
             store <- M.serverMetricStore <$> M.forkServer monHost monPort
             waiMetrics <- registerWaiMetrics store
-            return $ metrics waiMetrics
+            pure $ metrics waiMetrics
     return (monitor . accessLogger . gzip def . simpleCors)
     -- return (logStdoutDev . simpleCors)
     -- return (simpleCors)
@@ -105,13 +105,6 @@ mainInfo = programInfo "APVI Webservice" pAPVIConf defaultApviConf
 
 main :: IO ()
 main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \config -> do
-    -- This is the most reliable way of ensuring that the program runs using multiple threads.
-    -- Since we have some background processing happening, we need this to ensure the web server
-    -- remains responsive while producing new graphs.
-    -- TODO: Remove this
-    getNumProcessors >>= setNumCapabilities
-
-    -- M.forkServer "localhost" 8000
     let appLog = _apviAppLog config
     h' <- fileHandler appLog HSL.DEBUG
     h <- return $ setFormatter h' (simpleLogFormatter "[$time] $prio $loggername: $msg")
