@@ -42,18 +42,20 @@ import           Control.Monad.Trans.Either
 
 import           Data.Default
 
-import           Data.Configurator                         as C
-import           Data.Configurator.Types
-
 import           APVI.LiveSolar
 
 import           Graphics.Rendering.Chart.Backend.Diagrams (createEnv)
 import           Graphics.Rendering.Chart.Easy             hiding (Default)
-import           Util.Charts                               (loadFonts)
+import           Util.Charts                               (loadFonts, FontConfig, fontDir)
 import           Util.Types
+
+import Data.Text.Encoding (encodeUtf8)
 
 import qualified System.Remote.Monitoring                  as M
 import           Network.Wai.Metrics
+
+import Configuration.Utils
+import PkgInfo_apvi_webservice
 
 $(deriveLoggers "HSL" [HSL.DEBUG, HSL.INFO, HSL.ERROR, HSL.WARNING])
 
@@ -65,10 +67,9 @@ type App =
 appProxy :: Proxy App
 appProxy = Proxy
 
-
-appServer :: Config -> EitherT String IO (Server App)
+appServer :: APVIConf -> EitherT String IO (Server App)
 appServer conf = do
-    fontSelector <- liftIO $ loadFonts conf
+    fontSelector <- liftIO $ loadFonts (_apviFontPath conf)
     let !env = createEnv bitmapAlignmentFns 500 300 fontSelector
     ls <- EitherT $ makeLiveSolarServer conf env
     return $ (ls :<|> return (docsHtml "APVI WebService API" appProxy))
@@ -78,16 +79,16 @@ appServer conf = do
         _addCorsHeader app req respond = app req (respond . replaceHeader ("Access-Control-Allow-Origin","*"))
 
 
-makeMiddleware :: Config -> IO Middleware
+makeMiddleware :: APVIConf -> IO Middleware
 makeMiddleware config = do
-    accessLog <- C.lookupDefault "access.log" config "access-log"
+    let accessLog = _apviAccessLog config
+        mmonPort  = _apviMonitoringPort config
+        mmonHost  = encodeUtf8 <$> _apviMonitoringHost config
     h <- openFile accessLog AppendMode
     hSetBuffering h NoBuffering
     accessLogger <- mkRequestLogger (def {destination = Handle h
                                          ,outputFormat = Apache FromFallback
                                          ,autoFlush = True})
-    mmonPort <- C.lookup config "monitoring-port"
-    mmonHost <- C.lookup config "monitoring-hostname"
     monitor <- case (,) <$> mmonPort <*> mmonHost of
         Nothing -> pure id
         Just (monPort,monHost) -> do
@@ -99,20 +100,20 @@ makeMiddleware config = do
     -- return (simpleCors)
 
 
+mainInfo :: ProgramInfo APVIConf
+mainInfo = programInfo "APVI Webservice" pAPVIConf defaultApviConf
+
 main :: IO ()
-main = do
+main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \config -> do
     -- This is the most reliable way of ensuring that the program runs using multiple threads.
     -- Since we have some background processing happening, we need this to ensure the web server
     -- remains responsive while producing new graphs.
+    -- TODO: Remove this
     getNumProcessors >>= setNumCapabilities
 
-    (config,_tid) <- autoReload (autoConfig {onError = print})
-                        [ C.Required "/etc/aremi/apvi-webservice.conf"
-                        ]
-
     -- M.forkServer "localhost" 8000
-    allLog <- C.lookupDefault "all.log" config "all-log" :: IO FilePath
-    h' <- fileHandler allLog HSL.DEBUG
+    let appLog = _apviAppLog config
+    h' <- fileHandler appLog HSL.DEBUG
     h <- return $ setFormatter h' (simpleLogFormatter "[$time] $prio $loggername: $msg")
     HSL.updateGlobalLogger "Main" (HSL.addHandler h . HSL.setLevel HSL.DEBUG)
     HSL.updateGlobalLogger "APVI.LiveSolar" (HSL.addHandler h . HSL.setLevel HSL.DEBUG)
@@ -123,6 +124,6 @@ main = do
     case appServ of
         Left err -> errorM err
         Right serv -> do
+            let port = _apviHttpPort config
             mids <- makeMiddleware config
-            port <- lookupDefault 3000 config "port"
             run port $ mids $ serve appProxy serv

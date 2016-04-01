@@ -17,6 +17,18 @@
 
 
 module APVI.LiveSolar (
+    -- Configuration
+    APVIConf(..),
+    pAPVIConf,
+    defaultApviConf,
+    apviFontPath,
+    apviAccessLog,
+    apviAppLog,
+    apviHttpPort,
+    apviMonitoringPort,
+    apviMonitoringHost,
+    apviUpdateFreqSecs,
+    apviRetries,
     -- Web interface
     APVILiveSolar,
     makeLiveSolarServer,
@@ -67,7 +79,7 @@ import qualified Data.Aeson                    as A
 import           Data.Aeson.Lens               as AL
 import           Data.Text.Lens
 
-import           Graphics.Rendering.Chart.Easy hiding (Default)
+import           Graphics.Rendering.Chart.Easy hiding (Default,(.=))
 
 import           Data.Time.Clock               (UTCTime)
 #if MIN_VERSION_time(1,5,0)
@@ -104,10 +116,6 @@ import           Data.Time.Units               hiding (Day)
 
 import           Servant
 
-import qualified Data.Configurator             as C
-import           Data.Configurator.Types       (Config)
-
-
 import           Util.Charts
 import           Util.Fetch
 import           Util.Periodic
@@ -118,10 +126,71 @@ import           Text.Printf                   (printf)
 
 import           APVI.Types
 
+import Configuration.Utils
+import Data.Monoid
 
 $(deriveLoggers "HSL" [HSL.DEBUG, HSL.ERROR, HSL.WARNING, HSL.INFO])
 
+data APVIConf = APVIConf
+  { _apviFontPath       :: FontConfig
+  , _apviAccessLog      :: String
+  , _apviAppLog         :: String
+  , _apviHttpPort       :: Int
+  , _apviMonitoringPort :: Maybe Int
+  , _apviMonitoringHost :: Maybe Text
+  , _apviUpdateFreqSecs :: Integer
+  , _apviRetries        :: Int
+  }
+$(makeLenses ''APVIConf)
 
+defaultApviConf :: APVIConf
+defaultApviConf = APVIConf
+  { _apviFontPath       = defaultFontConfig
+  , _apviAccessLog      = "access.log"
+  , _apviAppLog         = "apvi-webservice.log"
+  , _apviHttpPort       = 3000
+  , _apviMonitoringPort = Nothing
+  , _apviMonitoringHost = Nothing
+  , _apviUpdateFreqSecs = 5
+  , _apviRetries        = 10
+  }
+
+instance FromJSON (APVIConf -> APVIConf) where
+    parseJSON = withObject "APVIConf" $ \o -> id
+      <$< apviFontPath       %.: "apviFontPath" % o
+      <*< apviAccessLog      ..: "apviAccessLog" % o
+      <*< apviAppLog         ..: "apviAppLog" % o
+      <*< apviHttpPort       ..: "apviHttpPort" % o
+      <*< apviMonitoringPort ..: "apviMonitoringPort" % o
+      <*< apviMonitoringHost ..: "apviMonitoringHost" % o
+      <*< apviUpdateFreqSecs ..: "apviUpdateFreqSecs" % o
+      <*< apviRetries        ..: "apviRetries" % o
+
+instance ToJSON APVIConf where
+  toJSON a = object
+    [ "apviFontPath"       A..= _apviFontPath a
+    , "apviAccessLog"      A..= _apviAccessLog a
+    , "apviAppLog"         A..= _apviAppLog a
+    , "apviHttpPort"       A..= _apviHttpPort a
+    , "apviMonitoringPort" A..= _apviMonitoringPort a
+    , "apviMonitoringHost" A..= _apviMonitoringHost a
+    , "apviUpdateFreqSecs" A..= _apviUpdateFreqSecs a
+    , "apviRetries"        A..= _apviRetries a
+    ]
+
+
+mkArg s l m h = short s <> long l <> metavar m <> help h
+
+pAPVIConf :: MParser APVIConf
+pAPVIConf = id
+  <$< apviFontPath       %:: pFontConfig
+  <*< apviAccessLog      .:: strOption   % mkArg 'l' "access-log"  "LOGFILE"    "HTTP access log path"
+  <*< apviAppLog         .:: strOption   % mkArg 'l' "app-log"     "APPLOGFILE" "HTTP app log path"
+  <*< apviHttpPort       .:: option auto % mkArg 'p' "http-port"   "PORT"       "HTTP server port"
+  <*< apviMonitoringPort .:: option auto % mkArg 'm' "mon-port"    "MONPORT"    "EKG monitoring HTTP port"
+  <*< apviMonitoringHost .:: option auto % mkArg 'h' "mon-host"    "MONHOST"    "EKG monitoring HTTP hostname (eg. localhost, 127.0.0.1)"
+  <*< apviUpdateFreqSecs .:: option auto % mkArg 'u' "update-freq" "MINS"       "How often to poll APVI for new data in minutes"
+  <*< apviRetries        .:: option auto % mkArg 'r' "retries"     "RETRIES"    "How often to retry fetching data before giving up"
 
 type APVILiveSolar = "v3" :> (
     "performance" :>
@@ -136,7 +205,7 @@ type APVILiveSolar = "v3" :> (
     )
 
 
-makeLiveSolarServer :: Config -> ChartEnv ->  IO (Either String (Server APVILiveSolar))
+makeLiveSolarServer :: APVIConf -> ChartEnv ->  IO (Either String (Server APVILiveSolar))
 makeLiveSolarServer conf env = do
     eref <- initialiseLiveSolar conf env
     case eref of
@@ -151,18 +220,12 @@ makeLiveSolarServer conf env = do
             )
 
 
-initialiseLiveSolar :: Config -> ChartEnv -> IO (Either String (IORef AppState))
+initialiseLiveSolar :: APVIConf -> ChartEnv -> IO (Either String (IORef AppState))
 initialiseLiveSolar conf env = do
     manager <- newManager tlsManagerSettings
     ref <- newIORef def { _chartEnv = Just env, _httpManager = Just manager}
-    mins <- C.lookupDefault 5 conf "update-frequency"
-    -- initialRetries <- C.lookupDefault 20 conf "initial-retries"
-
-
-    -- success <- updateRef initialRetries ref
-    -- if success
-    --     then do
-    retries <- C.lookupDefault 10 conf "retries"
+    let mins    = _apviUpdateFreqSecs conf
+        retries = _apviRetries conf
     _tid <- updateRef retries ref `every` (fromInteger mins :: Minute)
     return $ Right ref
         -- else return $ Left "Failed to initialise live solar data"
@@ -262,9 +325,9 @@ renderCharts env (fetched,jsn) tz title lns cols = do
 
         -- allChart :: Renderable ()
         allChart = wsChart allFiltered $ do
-                        layout_title .= (T.unpack allTitle)
-                        layout_y_axis . laxis_title .= "(%)"
-                        layout_x_axis . laxis_title .= timeZoneName tz
+                        layout_title L..= (T.unpack allTitle)
+                        layout_y_axis . laxis_title L..= "(%)"
+                        layout_x_axis . laxis_title L..= timeZoneName tz
     !allpngs <- if null allFiltered
         then return Nothing
         else do
@@ -281,9 +344,9 @@ renderCharts env (fetched,jsn) tz title lns cols = do
                            | Just (utct,d) <- getTS lns sname vals]
 
                 chart = wsChart [(sname,plotVals)] $ do
-                            layout_title .= (T.unpack fullTitle)
-                            layout_y_axis . laxis_title .= "(%)"
-                            layout_x_axis . laxis_title .= timeZoneName tz
+                            layout_title L..= (T.unpack fullTitle)
+                            layout_y_axis . laxis_title L..= "(%)"
+                            layout_x_axis . laxis_title L..= timeZoneName tz
             if hasTwo plotVals
                 then do
                     spng' <- {-# SCC "renderCharts.renderImage(state)" #-} renderImage env 500 300 chart

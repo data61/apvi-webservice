@@ -1,0 +1,9 @@
+apviHttpPort: 3000
+apviUpdateFreqSecs: 5
+apviFontPath:
+  fontdir: ./fonts
+apviRetries: 10
+apviAccessLog: access.log
+apviAppLog: apvi-webservice.log
+apviMonitoringPort: null
+apviMonitoringHostname: null

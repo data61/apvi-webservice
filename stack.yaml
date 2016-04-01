@@ -3,7 +3,7 @@ packages:
 - '.'
 - location:
     git: https://github.inside.nicta.com.au/AREMI/aremi-web-utils.git
-    commit: 0.9.1.2
+    commit: 0.10.0.3
 extra-deps:
 - time-units-1.0.0
 - lens-datetime-0.2.1
@@ -18,5 +18,6 @@ extra-deps:
 - SVGFonts-1.5.0.0
 - tuple-0.3.0.2
 - OneTuple-0.2.1
+- configuration-tools-0.2.14
 resolver: lts-5.10
 local-bin-path: dist
