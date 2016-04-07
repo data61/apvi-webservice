@@ -1,3 +1,6 @@
+### apvi-webservice version 0.10.0.0
+- Update to new configuration format. See config/apvi-webservice.yaml and `--help` in the executable
+
 ### apvi-webservice version 0.9.1.1
 - Fix RTS options in cabal file.
 

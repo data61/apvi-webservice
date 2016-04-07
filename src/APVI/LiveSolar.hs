@@ -1,5 +1,5 @@
-{-# LANGUAGE BangPatterns               #-}
 {-# LANGUAGE CPP                        #-}
+{-# LANGUAGE BangPatterns               #-}
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE FlexibleInstances          #-}
@@ -51,7 +51,6 @@ module APVI.LiveSolar (
 
 import           Data.List                     (sortBy)
 import           Data.Maybe                    (catMaybes)
-import           Data.Monoid                   ((<>))
 import           Data.Ord                      (comparing)
 
 import           Control.Applicative
@@ -74,12 +73,11 @@ import qualified Data.Csv                      as Csv
 import qualified Data.Vector                   as V
 
 import           Control.Lens                  as L
-import           Data.Aeson                    (Value)
 import qualified Data.Aeson                    as A
 import           Data.Aeson.Lens               as AL
 import           Data.Text.Lens
 
-import           Graphics.Rendering.Chart.Easy hiding (Default,(.=))
+import           Graphics.Rendering.Chart.Easy hiding (Default, (.=))
 
 import           Data.Time.Clock               (UTCTime)
 #if MIN_VERSION_time(1,5,0)
@@ -126,8 +124,7 @@ import           Text.Printf                   (printf)
 
 import           APVI.Types
 
-import Configuration.Utils
-import Data.Monoid
+import           Configuration.Utils
 
 $(deriveLoggers "HSL" [HSL.DEBUG, HSL.ERROR, HSL.WARNING, HSL.INFO])
 
@@ -179,8 +176,6 @@ instance ToJSON APVIConf where
     ]
 
 
-mkArg s l m h = short s <> long l <> metavar m <> help h
-
 pAPVIConf :: MParser APVIConf
 pAPVIConf = id
   <$< apviFontPath       %:: pFontConfig
@@ -191,6 +186,7 @@ pAPVIConf = id
   <*< apviMonitoringHost .:: option auto % mkArg 'h' "mon-host"    "MONHOST"    "EKG monitoring HTTP hostname (eg. localhost, 127.0.0.1)"
   <*< apviUpdateFreqSecs .:: option auto % mkArg 'u' "update-freq" "MINS"       "How often to poll APVI for new data in minutes"
   <*< apviRetries        .:: option auto % mkArg 'r' "retries"     "RETRIES"    "How often to retry fetching data before giving up"
+  where mkArg s l m h = short s <> long l <> metavar m <> help h
 
 type APVILiveSolar = "v3" :> (
     "performance" :>
@@ -209,7 +205,7 @@ makeLiveSolarServer :: APVIConf -> ChartEnv ->  IO (Either String (Server APVILi
 makeLiveSolarServer conf env = do
     eref <- initialiseLiveSolar conf env
     case eref of
-        Left str -> return $ Left str
+        Left s -> return $ Left s
         Right ref -> return $ Right (
             (        (fmap PCSV . serveCSV ref performanceCSV)
                 :<|> (fmap PPNG . servePNG ref performanceGraphs . unStateName)

@@ -16,9 +16,6 @@ import           System.Log.Handler.Simple
 import qualified System.Log.Logger                         as HSL
 import           System.Log.Logger.TH                      (deriveLoggers)
 
-import           GHC.Conc.Sync                             (getNumProcessors,
-                                                            setNumCapabilities)
-
 import           Network.Wai                               (Middleware)
 import           Network.Wai.Handler.Warp                  (run)
 import           Network.Wai.Middleware.Cors               (simpleCors)
@@ -36,7 +33,6 @@ import           System.IO                                 (BufferMode (..),
                                                             hSetBuffering,
                                                             openFile)
 
-
 import           Control.Monad.IO.Class                    (liftIO)
 import           Control.Monad.Trans.Either
 
@@ -46,16 +42,17 @@ import           APVI.LiveSolar
 
 import           Graphics.Rendering.Chart.Backend.Diagrams (createEnv)
 import           Graphics.Rendering.Chart.Easy             hiding (Default)
-import           Util.Charts                               (loadFonts, FontConfig, fontDir)
+import           Util.Charts                               (loadFonts)
 import           Util.Types
 
-import Data.Text.Encoding (encodeUtf8)
+import           Data.Text.Encoding                        (encodeUtf8)
 
-import qualified System.Remote.Monitoring                  as M
 import           Network.Wai.Metrics
+import qualified System.Remote.Monitoring                  as M
 
-import Configuration.Utils
-import PkgInfo_apvi_webservice
+import           Configuration.Utils
+import           PkgInfo_apvi_webservice
+
 
 $(deriveLoggers "HSL" [HSL.DEBUG, HSL.INFO, HSL.ERROR, HSL.WARNING])
 
