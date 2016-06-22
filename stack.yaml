@@ -2,7 +2,7 @@ flags: {}
 packages:
 - '.'
 - location:
-    git: https://github.inside.nicta.com.au/AREMI/aremi-web-utils.git
+    git: https://github.csiro.au/AREMI/aremi-web-utils.git
     commit: 0.10.0.3
 extra-deps:
 - time-units-1.0.0
