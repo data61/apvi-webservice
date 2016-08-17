@@ -116,4 +116,4 @@ main = runWithPkgInfoConfiguration mainInfo pkgInfo $ \config -> do
         Right serv -> do
             let port = _apviHttpPort config
             mids <- makeMiddleware config
-            run port $ mids $ serve appProxy serv
+            run port . mids . serve appProxy $ serv

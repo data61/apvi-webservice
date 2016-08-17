@@ -1,30 +1,391 @@
-Copyright (c) 2015, National ICT Australia
+CSIRO Open Source Software License Agreement (variation of the BSD / MIT
+License)
 
-All rights reserved.
+Copyright (c) 2016, Commonwealth Scientific and Industrial Research Organisation
+(CSIRO) ABN 41 687 119 230.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+All rights reserved. CSIRO is willing to grant you a license to this
+apvi-webservice on the following terms, except where otherwise indicated for
+third party material.
 
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
+Redistribution and use of this software in source and binary forms, with or
+without modification, are permitted provided that the following conditions are
+met:
 
-    * Redistributions in binary form must reproduce the above
-      copyright notice, this list of conditions and the following
-      disclaimer in the documentation and/or other materials provided
-      with the distribution.
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
 
-    * Neither the name of Alex Mason nor the names of other
-      contributors may be used to endorse or promote products derived
-      from this software without specific prior written permission.
+* Redistributions in binary form must reproduce the above copyright notice, this
+  list of conditions and the following disclaimer in the documentation and/or
+  other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+* Neither the name of CSIRO nor the names of its contributors may be used to
+  endorse or promote products derived from this software without specific prior
+  written permission of CSIRO.
+
+EXCEPT AS EXPRESSLY STATED IN THIS AGREEMENT AND TO THE FULL EXTENT PERMITTED BY
+APPLICABLE LAW, THE SOFTWARE IS PROVIDED "AS-IS". CSIRO MAKES NO
+REPRESENTATIONS, WARRANTIES OR CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO ANY REPRESENTATIONS, WARRANTIES OR CONDITIONS
+REGARDING THE CONTENTS OR ACCURACY OF THE SOFTWARE, OR OF TITLE,
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, THE ABSENCE
+OF LATENT OR OTHER DEFECTS, OR THE PRESENCE OR ABSENCE OF ERRORS, WHETHER OR NOT
+DISCOVERABLE.
+
+TO THE FULL EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL CSIRO BE
+LIABLE ON ANY LEGAL THEORY (INCLUDING, WITHOUT LIMITATION, IN AN ACTION FOR
+BREACH OF CONTRACT, NEGLIGENCE OR OTHERWISE) FOR ANY CLAIM, LOSS, DAMAGES OR
+OTHER LIABILITY HOWSOEVER INCURRED.  WITHOUT LIMITING THE SCOPE OF THE PREVIOUS
+SENTENCE THE EXCLUSION OF LIABILITY SHALL INCLUDE: LOSS OF PRODUCTION OR
+OPERATION TIME, LOSS, DAMAGE OR CORRUPTION OF DATA OR RECORDS; OR LOSS OF
+ANTICIPATED SAVINGS, OPPORTUNITY, REVENUE, PROFIT OR GOODWILL, OR OTHER ECONOMIC
+LOSS; OR ANY SPECIAL, INCIDENTAL, INDIRECT, CONSEQUENTIAL, PUNITIVE OR EXEMPLARY
+DAMAGES, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, ACCESS OF THE
+SOFTWARE OR ANY OTHER DEALINGS WITH THE SOFTWARE, EVEN IF CSIRO HAS BEEN ADVISED
+OF THE POSSIBILITY OF SUCH CLAIM, LOSS, DAMAGES OR OTHER LIABILITY.
+
+APPLICABLE LEGISLATION SUCH AS THE AUSTRALIAN CONSUMER LAW MAY APPLY
+REPRESENTATIONS, WARRANTIES, OR CONDITIONS, OR IMPOSES OBLIGATIONS OR LIABILITY
+ON CSIRO THAT CANNOT BE EXCLUDED, RESTRICTED OR MODIFIED TO THE FULL EXTENT SET
+OUT IN THE EXPRESS TERMS OF THIS CLAUSE ABOVE "CONSUMER GUARANTEES".  TO THE
+EXTENT THAT SUCH CONSUMER GUARANTEES CONTINUE TO APPLY, THEN TO THE FULL EXTENT
+PERMITTED BY THE APPLICABLE LEGISLATION, THE LIABILITY OF CSIRO UNDER THE
+RELEVANT CONSUMER GUARANTEE IS LIMITED (WHERE PERMITTED AT CSIRO'S OPTION) TO
+ONE OF FOLLOWING REMEDIES OR SUBSTANTIALLY EQUIVALENT REMEDIES:
+
+(a)               THE REPLACEMENT OF THE SOFTWARE, THE SUPPLY OF EQUIVALENT
+                  SOFTWARE, OR SUPPLYING RELEVANT SERVICES AGAIN;
+(b)               THE REPAIR OF THE SOFTWARE;
+(c)               THE PAYMENT OF THE COST OF REPLACING THE
+                  SOFTWARE, OF ACQUIRING EQUIVALENT SOFTWARE, HAVING THE
+                  RELEVANT SERVICES SUPPLIED AGAIN, OR HAVING THE SOFTWARE
+                  REPAIRED.
+
+IN THIS CLAUSE, CSIRO INCLUDES ANY THIRD PARTY AUTHOR OR OWNER OF ANY PART OF
+THE SOFTWARE OR MATERIAL DISTRIBUTED WITH IT.  CSIRO MAY ENFORCE ANY RIGHTS ON
+BEHALF OF THE RELEVANT THIRD PARTY.
+
+Third Party Components
+
+The following third party components are distributed with the Software.  You
+agree to comply with the license terms for these components as part of accessing
+the Software.  Other third party software may also be identified in separate
+files distributed with the Software.
+
+___________________________________________________________________
+The following Haskell libraries may be obtained from
+https://hackage.haskell.org/packages/
+
+Cabal-1.22.8.0                          [BSD3, 2003-2006, Isaac Jones 2005-2011,
+                                        Duncan Coutts]
+Chart-1.5.4                             [BSD3, Tim Docker, 2006-2014]
+Chart-diagrams-1.5.4                    [BSD3, Jan Bracker, 2006-2014]
+FontyFruity-0.5.3.1                     [BSD3]
+HUnit-1.3.1.1                           [BSD3]
+JuicyPixels-3.2.7                       [BSD3]
+MonadCatchIO-transformers-0.3.1.3       [BSD3]
+MonadRandom-0.4.2.2                     [OtherLicense]
+OneTuple-0.2.1                          [BSD3, (c) John Dorsey 2008]
+Rasterific-0.6.1                        [BSD3]
+SVGFonts-1.5.0.0                        [BSD3]
+StateVar-1.1.0.3                        [BSD3, Copyright (C) 2014-2015 Edward A.
+                                        Kmett, 2009-2015 Sven Panne]
+active-0.2.0.8                          [BSD3, (c) 2011-2015 Brent Yorgey]
+adjunctions-4.3                         [BSD3, Copyright (C) 2011-2014 Edward A.
+                                        Kmett]
+aeson-0.9.0.1                           [BSD3, (c) 2011-2015 Bryan O'Sullivan
+                                        (c) 2011 MailRank, Inc.]
+ansi-terminal-0.6.2.3                   [BSD3]
+ansi-wl-pprint-0.6.7.3                  [BSD3]
+appar-0.1.4                             [BSD3]
+aremi-web-utils-0.10.0.3                [BSD3]
+array-0.5.1.0                           [BSD3]
+asn1-encoding-0.9.3                     [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+asn1-parse-0.9.4                        [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+asn1-types-0.3.2                        [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+async-2.1.0                             [BSD3, (c) Simon Marlow 2012]
+attoparsec-0.13.0.1                     [BSD3]
+attoparsec-enumerator-0.3.4             [MIT]
+auto-update-0.1.3                       [MIT]
+base-4.8.2.0                            [BSD3]
+base-orphans-0.5.3                      [MIT, (c) 2012-2016 Simon Hengel, (c)
+                                        2014-2016 João Cristóvão, (c) 2015-2016
+                                        Ryan Scott]
+base-unicode-symbols-0.2.2.4            [BSD3, 2009–2011 Roel van Dijk
+                                        <vandijk.roel@gmail.com>]
+base64-bytestring-1.0.0.1               [BSD3, 2010-2012 Bryan O'Sullivan]
+bifunctors-5.2                          [BSD3, Copyright (C) 2008-2016 Edward A.
+                                        Kmett]
+binary-0.7.5.0                          [BSD3]
+blaze-builder-0.4.0.1                   [BSD3, (c) 2010-2014 Simon Meier (c)
+                                        2010 Jasper Van der Jeugt (c) 2013-2015
+                                        Leon P Smith]
+blaze-builder-enumerator-0.2.1.0        [BSD3, Copyright (c) 2010, 2011 Simon
+                                        Meier original package by Thomas Sutton
+                                        <me@thomas-sutton.id.au>]
+blaze-html-0.8.1.1                      [BSD3]
+blaze-markup-0.7.0.3                    [BSD3]
+blaze-svg-0.3.6                         [BSD3]
+rts-1.0                                 [BSD3]
+byteable-0.1.1                          [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+byteorder-1.0.4                         [BSD3]
+bytes-0.15.2                            [BSD3, Copyright (C) 2013-2015 Edward A.
+                                        Kmett]
+bytestring-0.10.6.0                     [BSD3, Copyright (c) Don Stewart
+                                        2005-2009, (c) Duncan Coutts 2006-2015,
+                                        (c) David Roundy 2003-2005, (c) Jasper
+                                        Van der Jeugt 2010, (c) Simon Meier
+                                        2010-2013.]
+bytestring-builder-0.10.6.0.0           [BSD3, (c) 2010 Jasper Van der Jeugt (c)
+                                        2010-2013 Simon Meier (c) 2012-2013
+                                        Duncan Coutts]
+bytestring-conversion-0.3.1             [MPL-2.0, (C) 2014-2015 Toralf Wittner]
+bytestring-mmap-0.2.2                   [BSD3]
+case-insensitive-1.2.0.6                [BSD3, 2011 Bas van Dijk]
+cassava-0.4.5.0                         [BSD3, (c) 2012 Johan Tibell (c) 2012
+                                        Bryan O'Sullivan (c) 2011 MailRank, Inc.]
+cereal-0.5.1.0                          [BSD3]
+charset-0.3.7.1                         [BSD3, (c) Edward Kmett 2010-2012]
+colour-2.3.3                            [MIT]
+comonad-4.2.7.2                         [BSD3, Copyright (C) 2008-2014 Edward A.
+                                        Kmett, Copyright (C) 2004-2008 Dave
+                                        Menendez]
+conduit-1.2.6.4                         [MIT]
+conduit-extra-1.1.11                    [MIT]
+configuration-tools-0.2.14              [MIT, (c) 2015-2016 Lars Kuhtz
+                                        <lakuhtz@gmail.com>, (c) 2014-2015
+                                        AlephCloud, Inc.]
+connection-0.2.5                        [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+containers-0.5.6.2                      [BSD3]
+contravariant-1.4                       [BSD3, Copyright (C) 2007-2015 Edward A.
+                                        Kmett]
+cookie-0.4.1.6                          [BSD3]
+cpphs-1.19.3                            [LGPL, 2004-2015, Malcolm Wallace]
+cryptohash-0.11.6                       [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+cryptohash-conduit-0.1.1                [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+cryptonite-0.10                         [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+css-text-0.1.2.1                        [BSD3]
+data-default-0.5.3                      [BSD3]
+data-default-class-0.0.1                [BSD3]
+data-default-instances-base-0.0.1       [BSD3]
+data-default-instances-containers-0.0.1 [BSD3]
+data-default-instances-dlist-0.0.1      [BSD3]
+data-default-instances-old-locale-0.0.1 [BSD3]
+deepseq-1.4.1.1                         [BSD3]
+diagrams-core-1.3.0.6                   [BSD3]
+diagrams-lib-1.3.1.1                    [BSD3]
+diagrams-postscript-1.3.0.4             [BSD3]
+diagrams-rasterific-1.3.1.5             [BSD3]
+diagrams-solve-0.1.0.1                  [BSD3]
+diagrams-svg-1.3.1.10                   [BSD3]
+directory-1.2.2.0                       [BSD3]
+distributive-0.5.0.2                    [BSD3, Copyright (C) 2011-2016 Edward A.
+                                        Kmett]
+dlist-0.7.1.2                           [BSD3, 2006-2009 Don Stewart, 2013-2014
+                                        Sean Leather]
+double-conversion-2.0.1.0               [BSD3]
+dual-tree-0.2.0.9                       [BSD3]
+easy-file-0.2.1                         [BSD3]
+either-4.4.1                            [BSD3, Copyright (C) 2008-2014 Edward A.
+                                        Kmett]
+ekg-0.4.0.8                             [BSD3]
+ekg-core-0.1.1.0                        [BSD3]
+ekg-json-0.1.0.0                        [BSD3]
+enclosed-exceptions-1.0.1.1             [MIT]
+enumerator-0.4.20                       [MIT, 2010-2011 John Millikin, 2011
+                                        Mikhail Vorozhtsov]
+exceptions-0.8.2.1                      [BSD3, Copyright (C) 2013-2015 Edward A.
+                                        Kmett Copyright (C) 2012 Google Inc.]
+extensible-exceptions-0.1.1.4           [BSD3]
+fast-logger-2.4.1                       [BSD3]
+file-embed-0.0.9.1                      [BSD3]
+filepath-1.4.0.0                        [BSD3, Neil Mitchell 2005-2015]
+fingertree-0.1.1.0                      [BSD3, (c) 2006 Ross Paterson, Ralf
+                                        Hinze]
+free-4.12.4                             [BSD3, Copyright (C) 2008-2015 Edward A.
+                                        Kmett]
+fsnotify-0.2.1                          [BSD3]
+ghc-prim-0.4.0.0                        [BSD3]
+groups-0.4.0.0                          [BSD3, Copyright (C) 2013 Nathan van
+                                        Doorn]
+hashable-1.2.4.0                        [BSD3]
+haskell-src-exts-1.17.1                 [BSD3]
+haskell-src-meta-0.6.0.13               [BSD3, (c) Matt Morrow]
+here-1.2.7                              [BSD3, ©2013 Taylor M. Hedberg, ©2014
+                                        Google Inc.]
+hfsevents-0.1.6                         [BSD3]
+hourglass-0.2.10                        [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+hslogger-1.2.9                          [BSD3, Copyright (c) 2004-2012 John
+                                        Goerzen]
+hslogger-template-2.0.3                 [PublicDomain]
+http-accept-0.2                         [OtherLicense, © 2012 Stephen Paul
+                                        Weber]
+http-client-0.4.27                      [MIT]
+http-client-tls-0.2.2                   [MIT]
+http-conduit-2.1.8                      [BSD3]
+http-date-0.0.6.1                       [BSD3]
+http-media-0.6.3                        [MIT, (c) 2012-2015 Timothy Jones]
+http-types-0.9                          [BSD3, (C) 2011 Aristid Breitkreuz]
+http2-1.4.5                             [BSD3]
+integer-gmp-1.0.0.0                     [BSD3]
+intervals-0.7.2                         [BSD3]
+iproute-1.7.0                           [BSD3]
+kan-extensions-4.2.3                    [BSD3, Copyright (C) 2008-2013 Edward A.
+                                        Kmett]
+lens-4.13                               [BSD3, Copyright (C) 2012-2015 Edward A.
+                                        Kmett]
+lens-aeson-1.0.0.5                      [MIT, Copyright (C) 2012 Paul Wilson
+                                        Copyright (C) 2013 Edward A. Kmett]
+lens-datetime-0.2.1                     [BSD3]
+lifted-base-0.2.3.6                     [BSD3, (c) 2011-2012 Bas van Dijk,
+                                        Anders Kaseorg]
+linear-1.20.4                           [BSD3, Copyright (C) 2012-2015 Edward A.
+                                        Kmett]
+lucid-2.9.5                             [BSD3, 2014 Chris Done]
+lucid-svg-0.6.0.1                       [BSD3, 2015 Jeffrey Rosenbluth]
+markdown-0.1.13.2                       [BSD3]
+memory-0.11                             [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+mime-types-0.1.0.6                      [MIT]
+mmorph-1.0.6                            [BSD3, 2013 Gabriel Gonzalez]
+monad-control-1.0.0.5                   [BSD3, (c) 2011 Bas van Dijk, Anders
+                                        Kaseorg]
+monad-logger-0.3.18                     [MIT]
+monad-loops-0.4.3                       [PublicDomain]
+monads-tf-0.1.0.2                       [BSD3]
+monoid-extras-0.4.0.4                   [BSD3]
+mtl-2.2.1                               [BSD3]
+network-2.6.2.1                         [BSD3]
+network-uri-2.6.1.0                     [BSD3]
+newtype-0.2                             [BSD3]
+old-locale-1.0.0.7                      [BSD3]
+old-time-1.1.0.3                        [BSD3]
+operational-0.2.3.2                     [BSD3, (c) Heinrich Apfelmus 2010-2013]
+optparse-applicative-0.12.1.0           [BSD3, (c) 2012-2014 Paolo Capriotti
+                                        <paolo@capriotti.io>]
+parallel-3.2.1.0                        [BSD3]
+parsec-3.1.9                            [BSD3]
+parsers-0.12.3                          [BSD3, Copyright (C) 2010-2013 Edward A.
+                                        Kmett]
+pem-0.2.2                               [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+polyparse-1.11                          [LGPL]
+prelude-extras-0.4.0.3                  [BSD3, Copyright (C) 2011-2016 Edward A.
+                                        Kmett]
+pretty-1.1.2.0                          [BSD3]
+primitive-0.6.1.0                       [BSD3, (c) Roman Leshchinskiy 2009-2012]
+process-1.2.3.0                         [BSD3]
+profunctors-5.2                         [BSD3, Copyright (C) 2011-2015 Edward A.
+                                        Kmett]
+psqueues-0.2.2.0                        [BSD3]
+random-1.1                              [BSD3]
+reflection-2.1.2                        [BSD3, 2009-2013 Edward A. Kmett, 2012
+                                        Elliott Hird, 2004 Oleg Kiselyov and
+                                        Chung-chieh Shan]
+regex-base-0.93.2                       [BSD3, Copyright (c) 2006, Christopher
+                                        Kuklewicz]
+regex-posix-0.95.2                      [BSD3, Copyright (c) 2007-2010,
+                                        Christopher Kuklewicz]
+resourcet-1.1.7.3                       [BSD3]
+retry-0.7.1                             [BSD3, Ozgun Ataman, Soostone Inc]
+safe-0.3.9                              [BSD3, Neil Mitchell 2007-2015]
+scientific-0.3.4.6                      [BSD3]
+semigroupoids-5.0.1                     [BSD3, Copyright (C) 2011-2015 Edward A.
+                                        Kmett]
+semigroups-0.18.1                       [BSD3, Copyright (C) 2011-2015 Edward A.
+                                        Kmett]
+servant-0.4.4.7                         [BSD3, 2014 Zalora South East Asia Pte
+                                        Ltd]
+servant-blaze-0.4.4.5                   [BSD3]
+servant-docs-0.4.4.7                    [BSD3, 2014-2015 Zalora South East Asia
+                                        Pte Ltd]
+servant-server-0.4.4.7                  [BSD3, 2014 Zalora South East Asia Pte
+                                        Ltd]
+simple-sendfile-0.2.21                  [BSD3]
+snap-core-0.9.8.0                       [BSD3]
+snap-server-0.9.5.1                     [BSD3]
+socks-0.5.4                             [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+split-0.2.3                             [BSD3, (c) Brent Yorgey, Louis Wasserman
+                                        2008-2012]
+statestack-0.2.0.5                      [BSD3]
+stm-2.4.4.1                             [BSD3]
+stm-chans-3.0.0.4                       [BSD3, Copyright (c) 2011--2015 wren
+                                        gayle romano]
+streaming-commons-0.1.15.2              [MIT]
+string-conversions-0.4                  [BSD3]
+stringsearch-0.3.6.6                    [BSD3, (c) 2007-2011 Daniel Fischer,
+                                        Chris Kuklewicz, Justin Bailey]
+syb-0.6                                 [BSD3]
+system-filepath-0.4.13.4                [MIT, John Millikin 2010-2012]
+tagged-0.8.3                            [BSD3, 2009-2015 Edward A. Kmett]
+tagsoup-0.13.9                          [BSD3, Neil Mitchell 2006-2016]
+template-haskell-2.10.0.0               [BSD3]
+text-1.2.2.1                            [BSD3, 2009-2011 Bryan O'Sullivan,
+                                        2008-2009 Tom Harper]
+th-expand-syns-0.3.0.6                  [BSD3]
+th-lift-0.7.6                           [BSD3, © 2006 Ian Lynagh, © 2010-2014
+                                        Mathieu Boespflug]
+th-orphans-0.13.0                       [BSD3, (c) Matt Morrow]
+th-reify-many-0.1.4                     [BSD3]
+time-1.5.0.1                            [BSD3]
+time-units-1.0.0                        [BSD3]
+tls-1.3.4                               [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+transformers-0.4.2.0                    [BSD3]
+transformers-base-0.4.4                 [BSD3, 2011 Mikhail Vorozhtsov
+                                        <mikhail.vorozhtsov@gmail.com>, Bas van
+                                        Dijk <v.dijk.bas@gmail.com>]
+transformers-compat-0.4.0.4             [BSD3, Copyright (C) 2012 Edward A.
+                                        Kmett]
+tuple-0.3.0.2                           [BSD3, 2014 Lennart Augustsson]
+unix-2.7.1.0                            [BSD3]
+unix-compat-0.4.1.4                     [BSD3]
+unix-time-0.3.6                         [BSD3]
+unordered-containers-0.2.5.1            [BSD3, 2010-2014 Johan Tibell 2010
+                                        Edward Z. Yang]
+utf8-string-1.0.1.1                     [BSD3]
+vault-0.3.0.6                           [BSD3, (c) Heinrich Apfelmus 2011-2013]
+vector-0.11.0.0                         [BSD3, (c) Roman Leshchinskiy 2008-2012]
+vector-algorithms-0.7.0.1               [BSD3, (c) 2008,2009,2010,2011,2012,
+                                        2013,2014,2015 Dan Doel (c) 2015 Tim
+                                        Baumann]
+void-0.7.1                              [BSD3, Copyright (C) 2008-2015 Edward A.
+                                        Kmett]
+wai-3.2.0                               [MIT]
+wai-app-static-3.1.4.1                  [MIT]
+wai-cors-0.2.4                          [MIT, (c) 2015 Lars Kuhtz
+                                        <lakuhtz@gmail.com>, (c) 2014 AlephCloud
+                                        Systems, Inc.]
+wai-extra-3.0.15                        [MIT]
+wai-logger-2.2.5                        [BSD3]
+wai-middleware-metrics-0.2.2            [BSD3]
+wai-util-0.8                            [OtherLicense, © 2012 Stephen Paul
+                                        Weber]
+warp-3.2.2                              [MIT]
+word8-0.1.2                             [BSD3]
+x509-1.6.3                              [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+x509-store-1.6.1                        [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+x509-system-1.6.3                       [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+x509-validation-1.6.3                   [BSD3, Vincent Hanquez
+                                        <vincent@snarc.org>]
+xml-1.3.14                              [BSD3, (c) 2007-2008 Galois Inc.]
+xss-sanitize-0.3.5.6                    [BSD3]
+yaml-0.8.16                             [BSD3]
+zlib-0.6.1.1                            [BSD3, (c) 2006-2015 Duncan Coutts]
+zlib-bindings-0.1.1.5                   [BSD3]
+zlib-enum-0.2.3.1                       [MIT]
+
+___________________________________________________________________
